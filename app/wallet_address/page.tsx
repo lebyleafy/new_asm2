@@ -76,8 +76,9 @@ const CircleNodePro = ({ data }: NodeProps) => (
   </div>
 );
 
+
 const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, style = {}, markerEnd, data }: EdgeProps) => {
-  const edgePath = `M${sourceX},${sourceY} L${targetX},${targetY}`;
+  const edgePath = `M${sourceX},${sourceY} C${sourceX + (targetX - sourceX) / 2},${sourceY} ${sourceX + (targetX - sourceX) / 2},${targetY} ${targetX},${targetY}`;
   return (
     <>
       <path id={id} style={style} className="react-flow__edge-path" d={edgePath} markerEnd={markerEnd} />
@@ -329,8 +330,8 @@ const fetchAddressInfo = async (address: string) => {
       const tokenData = await tokenResponse.json();
       const tokenTransactions = tokenData.result;
 
-      let totalSent = 0;
-      let fundedBy = 'N/A'; // Default value for funded by
+      const totalSent = 0;
+      const fundedBy = 'N/A'; // Default value for funded by
 
     
 
@@ -346,25 +347,29 @@ const fetchAddressInfo = async (address: string) => {
       // Calculate token holdings
       const tokenHoldings: { [key: string]: { name: string; symbol: string; amount: number } } = {};
 
-      tokenTransactions.forEach((tokenTx: any) => {
-          const tokenSymbol = tokenTx.tokenSymbol;
-          const tokenName = tokenTx.tokenName;
-          const value = parseFloat(tokenTx.value);
-
-          if (tokenTx.to.toLowerCase() === address.toLowerCase()) {
-              // Received tokens
-              if (!tokenHoldings[tokenSymbol]) {
-                  tokenHoldings[tokenSymbol] = { name: tokenName, symbol: tokenSymbol, amount: 0 }; // Use amount
-              }
-              tokenHoldings[tokenSymbol].amount += value; // Update amount
-          } else if (tokenTx.from.toLowerCase() === address.toLowerCase()) {
-              // Sent tokens
-              if (!tokenHoldings[tokenSymbol]) {
-                  tokenHoldings[tokenSymbol] = { name: tokenName, symbol: tokenSymbol, amount: 0 }; // Use amount
-              }
-              tokenHoldings[tokenSymbol].amount -= value; // Update amount
-          }
-      });
+      if (Array.isArray(tokenTransactions)) {
+        tokenTransactions.forEach((tokenTx) => {
+            const tokenSymbol = tokenTx.tokenSymbol;
+            const tokenName = tokenTx.tokenName;
+            const value = parseFloat(tokenTx.value);
+    
+            if (tokenTx.to.toLowerCase() === address.toLowerCase()) {
+                // Received tokens
+                if (!tokenHoldings[tokenSymbol]) {
+                    tokenHoldings[tokenSymbol] = { name: tokenName, symbol: tokenSymbol, amount: 0 };
+                }
+                tokenHoldings[tokenSymbol].amount += value;
+            } else if (tokenTx.from.toLowerCase() === address.toLowerCase()) {
+                // Sent tokens
+                if (!tokenHoldings[tokenSymbol]) {
+                    tokenHoldings[tokenSymbol] = { name: tokenName, symbol: tokenSymbol, amount: 0 };
+                }
+                tokenHoldings[tokenSymbol].amount -= value;
+            }
+        });
+    } else {
+        console.error('tokenTransactions is not an array:', tokenTransactions);
+    }
 
       const tokenHoldingsArray: TokenHolding[] = Object.values(tokenHoldings);
       setTokenHoldings(tokenHoldingsArray); 
@@ -472,14 +477,14 @@ const fetchAddressInfo = async (address: string) => {
             id: `e${edgeId}`,
             source: edgeData.source,
             target: edgeData.target,
-            type: 'custom',
+            type: 'smoothstep', // Change to 'smoothstep' for curved edges
             data: { 
               label: `${edgeData.totalAmount.toFixed(4)} ETH`,
-              transactions: edgeData.transactions //moi update
+              transactions: edgeData.transactions
             },
             markerEnd: { type: MarkerType.ArrowClosed },
-            style: { stroke: '#60a5fa', strokeWidth: 3, curvature: 0.2 }
-          })
+            style: { stroke: '#60a5fa', strokeWidth: 3 } // Remove the 'curvature' property
+          });
         })
 
         // Update processed addresses
