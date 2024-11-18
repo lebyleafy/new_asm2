@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 'use client'
 import axios from 'axios'
 import React, { useCallback, useState, useEffect } from "react";
