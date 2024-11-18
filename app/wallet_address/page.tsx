@@ -264,7 +264,7 @@ export default function TransactionExplorer() {
 const ETHERSCAN_API_KEY = "RQ1E2Y5VTM4EKCNZTDHD58UCIXMPD34N1J"; 
 
   useEffect(() => {
-    const newAddress = searchParams.get('address');
+    const newAddress = searchParams?.get('address');
     if (newAddress) {
       setAddress(newAddress);
       fetchAddressInfo(newAddress);
