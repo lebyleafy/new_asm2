@@ -1,4 +1,4 @@
-'use client'
+use client'
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
@@ -46,7 +46,8 @@ interface StateChange {
 }
 
 export default function TransactionPage() {
-  const { hash } = useParams()
+  const params = useParams<{ hash: string }>(); // Get params from the URL
+  const hash = params?.hash; // Safely access hash
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
